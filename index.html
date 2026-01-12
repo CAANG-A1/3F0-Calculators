@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -180,7 +180,7 @@
             <div class="mb-8 no-print">
                 <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-3xl p-6 shadow-sm">
                     <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i> Quick Import from PCARS</h3>
-                    <p class="text-slate-500 text-sm mb-4">Paste text from your Point Credit Summary. TD > 5 logic will automatically zero out matching PTS columns.</p>
+                    <p class="text-slate-500 text-sm mb-4">Paste text from your Point Credit Summary. TD > 5 logic and Z-status rows will be filtered automatically.</p>
                     <textarea id="pcars-input" placeholder="Paste PCARS text here..." class="w-full h-24 p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-3"></textarea>
                     <div class="flex justify-between items-center">
                         <button onclick="parseText()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all flex items-center gap-2 uppercase tracking-widest leading-none"><i data-lucide="search" class="w-4 h-4"></i> Scan Text</button>
@@ -732,8 +732,13 @@
 
             lines.forEach(l => { 
                 const m = l.match(dateRegex); 
-                // We exclude lines containing ' Z ' (Inactive) 
-                if (m && m.length === 2 && !l.toUpperCase().includes(' Z ')) { 
+                
+                // --- ENHANCED EXCLUSION ---
+                // Specifically look for Z-status codes like Z, ZR, ZV, etc. 
+                // These are usually in the status column toward the end of the line.
+                const isZRow = /\sZ[A-Z]?\s/i.test(l) || l.trim().endsWith(' Z') || l.trim().includes(' Z ');
+
+                if (m && m.length === 2 && !isZRow) { 
                     const s = normalize(m[0]), e = normalize(m[1]);
                     if (!s || !e) return;
 
